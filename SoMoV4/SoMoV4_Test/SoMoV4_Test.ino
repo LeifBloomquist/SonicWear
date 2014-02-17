@@ -205,7 +205,7 @@ byte GyroToCC(long in)
   return temp*127;
 }
 
-#define MAG_CENTER  0        // Assume same for x, y, and z
+#define MAG_CENTER 0        // Assume same for x, y, and z
 #define MAG_RANGE  32000
 #define MAG_MAX    (MAG_CENTER+MAG_RANGE)
 #define MAG_MIN    (MAG_CENTER-MAG_RANGE)
@@ -234,7 +234,7 @@ float Scale(long in, long smin, long smax)
 }
 
 
-// Scale one of the inputs to return distance from center (0=centered, 1=min or max)
+// Scale one of the inputs to return distance from center (0.0=centered, 1.0=min or max, may exceed 1.0)
 float ScaleAbs(long in, long center, long range)
 {
   // Get the absolute distance from center
