@@ -1,10 +1,14 @@
+
+// Based on:
 // I2C device class (I2Cdev) demonstration Arduino sketch for MPU9150
 // 1/4/2013 original by Jeff Rowberg <jeff@rowberg.net> at https://github.com/jrowberg/i2cdevlib
 //          modified by Aaron Weiss <aaron@sparkfun.com>
+//          modified by Leif Bloomquist <sonicwear@leifbloomquist.net>
 //
 // Changelog:
 //     2011-10-07 - initial release
-//     2013-1-4 - added raw magnetometer output
+//     2013-1-4   - added raw magnetometer output
+//     2014-02-17 - modified to demonstrate SoMo v4.0 board (LB)
 
 /* ============================================
 I2Cdev device library code is placed under the MIT license
@@ -31,7 +35,6 @@ THE SOFTWARE.
 
 #include <SoftwareSerial.h>
 
-
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
 #include "Wire.h"
@@ -51,7 +54,7 @@ int16_t ax, ay, az;
 int16_t gx, gy, gz;
 int16_t mx, my, mz;
 
-SoftwareSerial mySerial(MOSI, 4); // RX, TX
+SoftwareSerial radioSerial(MOSI, 4); // RX, TX
 
 void setup() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -71,16 +74,8 @@ void setup() {
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
     
     // Soft Serial for XBee Radio
-    mySerial.begin(38400);
+    radioSerial.begin(38400);
 }
-
-
-#define CENTER 0        // Assume same for x, y, and z
-#define RANGE  20000
-#define MAX    (CENTER+RANGE)
-#define MIN    (CENTER-RANGE)
-
-
 
 void loop() {
     // read raw accel/gyro measurements from device
@@ -90,71 +85,169 @@ void loop() {
     //accelgyro.getAcceleration(&ax, &ay, &az);
     //accelgyro.getRotation(&gx, &gy, &gz);
 
-    // display tab-separated accel/gyro x/y/z values
-    
-   /*
+    /*
+    // display tab-separated accel/gyro x/y/z values  
     Serial.print("a/g/m:\t");
     Serial.print(ax); Serial.print("\t");
     Serial.print(ay); Serial.print("\t");
-    Serial.print(az); Serial.print("\t");
+    Serial.print(az); Serial.print(" |\t");
     Serial.print(gx); Serial.print("\t");
     Serial.print(gy); Serial.print("\t");
-    Serial.print(gz); Serial.print("\t");
+    Serial.print(gz); Serial.print(" |\t");
     Serial.print(mx); Serial.print("\t");
     Serial.print(my); Serial.print("\t");
     Serial.println(mz);
     */
-    
-    
-    // Convert acceleration to MIDI
-    byte xcc = AccelToCC(ax);
-    byte ycc = AccelToCC(ay);
-    byte zcc = AccelToCC(az);
-    
+       
+    // Convert data to MIDI CC's
+    byte axcc = AccelToCC(ax);
+    byte aycc = AccelToCC(ay);
+    byte azcc = AccelToCC(az);
+    byte amcc = AccelMagnitudeToCC(ax,ay,az);
+    byte gxcc = GyroToCC(gx);
+    byte gycc = GyroToCC(gy);
+    byte gzcc = GyroToCC(gz);
+    byte mxcc = MagToCC(mx);
+    byte mycc = MagToCC(my);
+    byte mzcc = MagToCC(mz);
+     
     // Transmit     
-    sendMIDI(0xB0,20,xcc);   // X = Channel 1, CC#20
-    sendMIDI(0xB0,21,ycc);   // Y = Channel 1, CC#21
-    sendMIDI(0xB0,22,zcc);   // Z = Channel 1, CC#22
+    sendMIDI(0xB0,20,axcc);   // X = Channel 1, CC#20
+    sendMIDI(0xB0,21,aycc);   // Y = Channel 1, CC#21
+    sendMIDI(0xB0,22,azcc);   // Z = Channel 1, CC#22
+    sendMIDI(0xB0,23,amcc);   // M = Channel 1, CC#23
+    sendMIDI(0xB0,24,gxcc);   // X = Channel 1, CC#24
+    sendMIDI(0xB0,25,gycc);   // Y = Channel 1, CC#25
+    sendMIDI(0xB0,26,gzcc);   // Z = Channel 1, CC#26
+    sendMIDI(0xB0,27,mxcc);   // X = Channel 1, CC#27
+    sendMIDI(0xB0,28,mycc);   // Y = Channel 1, CC#28
+    sendMIDI(0xB0,29,mzcc);   // Z = Channel 1, CC#29
     
-    delay(50);
+    delay(50);  // Milliseconds
 }
 
 void sendMIDI(byte cmd, byte data1, byte data2)
 {
-   mySerial.write(cmd);
-   mySerial.write(data1);
-   mySerial.write(data2);
+   radioSerial.write(cmd);
+   radioSerial.write(data1);
+   radioSerial.write(data2);
 }
+
+
+#define ACCEL_CENTER 0        // Assume same for x, y, and z
+#define ACCEL_RANGE  16000
+#define ACCEL_MAX    (ACCEL_CENTER+ACCEL_RANGE)
+#define ACCEL_MIN    (ACCEL_CENTER-ACCEL_RANGE)
 
 // Map an input between MIN and MAX to 0 to 127
 byte AccelToCC(long in)
 {   
-  float temp = Scale(in);
+  float temp = Scale(in, ACCEL_MIN, ACCEL_MAX);
+  return temp*127;
+}
+
+// Return a value 0 to 127 representing the total magnitude force
+byte AccelMagnitudeToCC(long x, long y, long z)
+{   
+  float tempx = ScaleAbs(x, ACCEL_CENTER, ACCEL_RANGE);
+  float tempy = ScaleAbs(y, ACCEL_CENTER, ACCEL_RANGE);
+  float tempz = ScaleAbs(z, ACCEL_CENTER, ACCEL_RANGE);
+    
+  float temp1 = sq(tempx) + sq(tempy) + sq(tempz);
+  float magnitudein = sqrt(temp1);
+ 
+  // Extremely naive, and probably wrong, gravity removal (but it works)
+  float magnitudeout = magnitudein-1.0;
+  
+  // Lower bound here
+  if (magnitudeout < 0.0) magnitudeout = 0.0;
+  
+  // Scale the output to make it less sensitive.  **Adjust this as needed**
+  float magnitudescaled = magnitudeout / 2.5;
+  
+  // Upper Bound
+  if (magnitudescaled > 1.0) magnitudescaled = 1.0;
+  
+  // Determine CC value
+  byte cc = magnitudescaled*127;  
+  
+  Serial.print("X: ");
+  Serial.print(tempx);
+  Serial.print("\tY: ");
+  Serial.print(tempy);
+  Serial.print("\tZ: ");
+  Serial.print(tempz);
+  Serial.print("\tMagnitude (Gravity In): "); 
+  Serial.print(magnitudein);
+  Serial.print("\tMagnitude (Gravity Out): "); 
+  Serial.print(magnitudeout);
+  Serial.print("\tMagnitude (Scaled): "); 
+  Serial.print(magnitudescaled);
+  Serial.print("\tCC Value: "); 
+  Serial.print(cc);
+  Serial.println();
+  
+ 
+  
+  return cc;
+}
+
+
+#define GYRO_CENTER 0        // Assume same for x, y, and z
+#define GYRO_RANGE  32000
+#define GYRO_MAX    (GYRO_CENTER+GYRO_RANGE)
+#define GYRO_MIN    (GYRO_CENTER-GYRO_RANGE)
+
+// Map an input between MIN and MAX to 0 to 127
+byte GyroToCC(long in)
+{   
+  float temp = Scale(in, GYRO_MIN, GYRO_MAX);
+  return temp*127;
+}
+
+#define MAG_CENTER  0        // Assume same for x, y, and z
+#define MAG_RANGE  32000
+#define MAG_MAX    (MAG_CENTER+MAG_RANGE)
+#define MAG_MIN    (MAG_CENTER-MAG_RANGE)
+
+// Map an input between MIN and MAX to 0 to 127
+byte MagToCC(long in)
+{   
+  float temp = Scale(in, MAG_MIN, MAG_MAX);
   return temp*127;
 }
 
 
 // Scale one of the inputs to between 0.0 and 1.0
-float Scale(long in)
+float Scale(long in, long smin, long smax)
 {
   // Bound
-  if (in > MAX) in=MAX;
-  if (in < MIN) in=MIN;
+  if (in > smax) in=smax;
+  if (in < smin) in=smin;
   
   // Change zero-offset
-  in = in-MIN;
+  in = in-smin;
   
-  // Scale between 0.0 and 1.0
-  float temp = (float)in/((float)MAX-(float)MIN);
+  // Scale between 0.0 and 1.0    (0.5 would be halfway)
+  float temp = (float)in/((float)smax-(float)smin);
   return temp;   
 }
 
 
-    /*
-    Serial.print("ax=");
-    Serial.print(ax);
-    Serial.print("\tScaled=");
-    Serial.println(xscaled);
-    Serial.print("\tCC=");
-    Serial.println(xcc);
-    */
+// Scale one of the inputs to return distance from center (0=centered, 1=min or max)
+float ScaleAbs(long in, long center, long range)
+{
+  // Get the absolute distance from center
+  long temp = in-center;
+  long val = abs(temp);
+  
+  // Scale
+  float out = (float)val/(float)range;  
+  
+  // *Don't* Bound.
+  
+  return out;
+}
+
+
+
