@@ -85,7 +85,7 @@ void loop() {
     //accelgyro.getAcceleration(&ax, &ay, &az);
     //accelgyro.getRotation(&gx, &gy, &gz);
 
-    /*
+/*
     // display tab-separated accel/gyro x/y/z values  
     Serial.print("a/g/m:\t");
     Serial.print(ax); Serial.print("\t");
@@ -97,8 +97,8 @@ void loop() {
     Serial.print(mx); Serial.print("\t");
     Serial.print(my); Serial.print("\t");
     Serial.println(mz);
-    */
-       
+*/
+
     // Convert data to MIDI CC's
     byte axcc = AccelToCC(ax);
     byte aycc = AccelToCC(ay);
@@ -134,7 +134,7 @@ void sendMIDI(byte cmd, byte data1, byte data2)
 }
 
 
-#define ACCEL_CENTER 0        // Assume same for x, y, and z
+#define ACCEL_CENTER 0         // Assume same for x, y, and z
 #define ACCEL_RANGE  16000
 #define ACCEL_MAX    (ACCEL_CENTER+ACCEL_RANGE)
 #define ACCEL_MIN    (ACCEL_CENTER-ACCEL_RANGE)
@@ -171,6 +171,7 @@ byte AccelMagnitudeToCC(long x, long y, long z)
   // Determine CC value
   byte cc = magnitudescaled*127;  
   
+/*
   Serial.print("X: ");
   Serial.print(tempx);
   Serial.print("\tY: ");
@@ -186,8 +187,7 @@ byte AccelMagnitudeToCC(long x, long y, long z)
   Serial.print("\tCC Value: "); 
   Serial.print(cc);
   Serial.println();
-  
- 
+*/
   
   return cc;
 }
