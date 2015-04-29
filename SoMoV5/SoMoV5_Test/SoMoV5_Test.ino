@@ -9,7 +9,7 @@
 //     2011-10-07 - initial release
 //     2013-1-4   - added raw magnetometer output
 //     2014-02-17 - modified to demonstrate SoMo v4.0 board (LB)
-//     2014-03-11 - modified to demonstrate SoMo v5.0 board (LB)
+//     2015-03-11 - modified to demonstrate SoMo v5.0 board (LB)
 
 
 #include <SoftwareSerial.h>
@@ -40,7 +40,8 @@ int16_t mx, my, mz;
 
 SoftwareSerial radioSerial(RX, TX);
 
-void setup() {
+void setup() 
+{
     // join I2C bus (I2Cdev library doesn't do this automatically)
     Wire.begin();
 
@@ -58,14 +59,17 @@ void setup() {
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
     
     // Soft Serial for XBee Radio
-    radioSerial.begin(38400);
+    radioSerial.begin(57600);
     
     // Turn on SoMo Power LED
     pinMode(POWER, OUTPUT);
     digitalWrite(POWER, HIGH);   
 }
 
-void loop() {
+void loop() 
+{
+    digitalWrite(POWER, HIGH);
+  
     // read raw accel/gyro measurements from device
     accelgyro.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);
 
@@ -75,7 +79,7 @@ void loop() {
 
 
     // display tab-separated accel/gyro x/y/z values  
-    Serial.print("a/g/m:\t");
+/*  Serial.print("a/g/m:\t");
     Serial.print(ax); Serial.print("\t");
     Serial.print(ay); Serial.print("\t");
     Serial.print(az); Serial.print(" |\t");
@@ -85,6 +89,7 @@ void loop() {
     Serial.print(mx); Serial.print("\t");
     Serial.print(my); Serial.print("\t");
     Serial.println(mz);
+*/
 
 
     // Convert data to MIDI CC's
@@ -99,6 +104,8 @@ void loop() {
     byte mycc = MagToCC(my);
     byte mzcc = MagToCC(mz);
      
+    digitalWrite(POWER, LOW);
+     
     // Transmit     
     sendMIDI(0xB0,20,axcc);   // X = Channel 1, CC#20
     sendMIDI(0xB0,21,aycc);   // Y = Channel 1, CC#21
@@ -111,7 +118,7 @@ void loop() {
     sendMIDI(0xB0,28,mycc);   // Y = Channel 1, CC#28
     sendMIDI(0xB0,29,mzcc);   // Z = Channel 1, CC#29
     
-    delay(50);  // Milliseconds
+    delay(1);  // Milliseconds
 }
 
 void sendMIDI(byte cmd, byte data1, byte data2)
