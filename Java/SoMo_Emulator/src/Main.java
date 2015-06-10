@@ -30,7 +30,7 @@ public class Main
 			MidiDevice.Info	info = MidiCommon.getMidiDeviceInfo(strDeviceName, true);
 			if (info == null)
 			{
-				out("no device info found for name " + strDeviceName);
+				out("No device info found for name " + strDeviceName);
 				System.exit(1);
 			}
 			
@@ -38,7 +38,7 @@ public class Main
 			
 			if (outputDevice == null)
 			{
-				out("wasn't able to retrieve MidiDevice");
+				out("Wasn't able to retrieve MidiDevice");
 				System.exit(1);
 			}
 			else

@@ -10,6 +10,21 @@ public class Emulator
 {
 	static MidiDevice myOutputDevice = null;	
 	static int myMidiChannel = 0;
+	
+	// MIDI note values for the C Major Pentatonic Scale.
+	byte pentatonic[] = { // C   D  E  G  A 
+	                  //  0,  2, 4, 7, 9,       // Octave 0
+	                  //  12,14,16,19,21,       // Octave 1
+	                  //  24,26,28,31,33,       // Octave 2
+	                      36,38,40,43,45,       // Octave 3
+	                      48,50,52,55,57,       // Octave 4
+	                      60,62,64,67,69,       // Octave 5
+	                      72,74,76,79,81,       // Octave 6
+	                      84,86,88,91,93        // Octave 7
+	                  //  96,98,100,103,105,    // Octave 8
+	                  //  108,110,112,115,117,  // Octave 9
+	                  //  120,122,124,127,      // Octave 10
+	                   };
 
 	public static void start(String filename, MidiDevice outputDevice, int channel, int delay_ms) 
 	{
@@ -70,6 +85,8 @@ public class Emulator
 		int mxcc = Convert.MagToCC(mx);
 		int mycc = Convert.MagToCC(my);
 		int mzcc = Convert.MagToCC(mz);
+		
+		float angle = Convert.AccelToPercent(ax);
 		
 		try
 		{

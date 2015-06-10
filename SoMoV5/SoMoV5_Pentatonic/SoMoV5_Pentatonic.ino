@@ -34,7 +34,7 @@ int16_t gx, gy, gz;
 int16_t mx, my, mz;
 
 #define POWER 1
-#define RX    17
+#define RX    MOSI
 #define TX    4
 
 #define ACCEL_CENTER 0         // Assume same for x, y, and z
@@ -45,7 +45,7 @@ int16_t mx, my, mz;
 SoftwareSerial radioSerial(RX, TX);
 
 // MIDI note values for the C Major Pentatonic Scale.
-byte pentatonic[] = { C   D  E  G  A 
+byte pentatonic[] = { // C   D  E  G  A 
                   //  0,  2, 4, 7, 9,       // Octave 0
                   //  12,14,16,19,21,       // Octave 1
                   //  24,26,28,31,33,       // Octave 2
@@ -66,7 +66,10 @@ void setup()
     // join I2C bus (I2Cdev library doesn't do this automatically)
     Wire.begin();
 
-    // initialize serial communication
+    // Soft Serial for XBee Radio
+    radioSerial.begin(57600);
+    
+    // Initialize USB serial communication
     Serial.begin(38400);
 
     // initialize device
@@ -76,9 +79,6 @@ void setup()
     // verify connection
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-    
-    // Soft Serial for XBee Radio
-    radioSerial.begin(57600);
     
     // Turn on SoMo Power LED
     pinMode(POWER, OUTPUT);

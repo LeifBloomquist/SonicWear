@@ -29,6 +29,12 @@ public class Convert
 		 return (int) (temp*127);
 	 }
 	 
+	 static int AccelToPercent(long in)
+	 {   
+		 float temp = Scale(in, ACCEL_MIN, ACCEL_MAX);
+		 return (int) (temp*127);
+	 }
+	 
 	// Return a value 0 to 127 representing the total magnitude force
 	static int AccelMagnitudeToCC(long x, long y, long z)
 	{   
