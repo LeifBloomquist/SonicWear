@@ -143,31 +143,30 @@ void loop()
             float qw = fusion.getFusionQPose().scalar();
            
             // SoMo-Specific
-            /*
+/*            
             byte pitch_cc = ValToCC(pitch);
             byte yaw_cc = ValToCC(yaw);
             byte roll_cc = ValToCC(roll);
-           
-            sendMIDI(0xB0,30, pitch_cc);   // X = Channel 1, CC#30
-            sendMIDI(0xB0,31, yaw_cc);     // Y = Channel 1, CC#31
-            sendMIDI(0xB0,32, roll_cc);    // Z = Channel 1, CC#32
-            */
+
+            sendMIDI(0xB0,30, roll_cc);    // Z = Channel 1, CC#30           
+            sendMIDI(0xB0,31, pitch_cc);   // X = Channel 1, CC#30
+            sendMIDI(0xB0,32, yaw_cc);     // Y = Channel 1, CC#32
+*/            
+            radioSerial.print(roll);
+            radioSerial.print(",");
+            radioSerial.print(pitch);
+            radioSerial.print(",");
+            radioSerial.print(yaw);
+            radioSerial.print(",");
+
             radioSerial.print(qx);
             radioSerial.print(",");
             radioSerial.print(qy);
             radioSerial.print(",");
             radioSerial.print(qz);
-            
-            /*
-            radioSerial.print(qx);
             radioSerial.print(",");
-            radioSerial.print(qy);
-            radioSerial.print(",");
-            radioSerial.print(qz);
-            radioSerial.print(",");
-            radioSerial.print(qw);
+            radioSerial.print(qw); 
             radioSerial.println();
-            */
       }
     }
 }
