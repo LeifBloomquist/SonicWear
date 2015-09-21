@@ -74,7 +74,7 @@ void setup() {
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
     
     // Soft Serial for XBee Radio
-    radioSerial.begin(38400);
+    radioSerial.begin(57600);
 }
 
 void loop() {
