@@ -20,6 +20,9 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+//  Modified by Leif Bloomquist for SOMO V5 testing
+
 
 #include <Wire.h>
 #include "I2Cdev.h"
@@ -78,7 +81,8 @@ void setup()
     // 0 means that only gyros are used, 1 means that only accels/compass are used
     // In-between gives the fusion mix.
     
-    fusion.setSlerpPower(0.02);
+    // fusion.setSlerpPower(0.02);   // Default
+    fusion.setSlerpPower(0.5); 
     
     // use of sensors in the fusion algorithm can be controlled here
     // change any of these to false to disable that sensor
@@ -133,9 +137,9 @@ void loop()
 //            RTMath::displayRollPitchYaw("Pose:", (RTVector3&)fusion.getFusionPose()); // fused output
 //            Serial.println();
             
-            float roll = fusion.getFusionPose().x() * RTMATH_RAD_TO_DEGREE;
+            float roll  = fusion.getFusionPose().x() * RTMATH_RAD_TO_DEGREE;
             float pitch = fusion.getFusionPose().y() * RTMATH_RAD_TO_DEGREE;
-            float yaw = fusion.getFusionPose().z() * RTMATH_RAD_TO_DEGREE;
+            float yaw   = fusion.getFusionPose().z() * RTMATH_RAD_TO_DEGREE;
             
             float qx = fusion.getFusionQPose().x();
             float qy = fusion.getFusionQPose().y();
