@@ -48,7 +48,7 @@ void setup()
     // initialize serial communication
     // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
     // it's really up to you depending on your project)
-    Serial.begin(57600);
+    Serial.begin(38400);
 
     // initialize device
     Serial.println("Initializing I2C devices...");
@@ -59,7 +59,7 @@ void setup()
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
     
     // Soft Serial for XBee Radio
-    radioSerial.begin(57600);
+    radioSerial.begin(38400);
     
     // Turn on SoMo Power LED
     pinMode(POWER, OUTPUT);
@@ -118,7 +118,7 @@ void loop()
     sendMIDI(0xB0,28,mycc);   // Y = Channel 1, CC#28
     sendMIDI(0xB0,29,mzcc);   // Z = Channel 1, CC#29
     
-    delay(1);  // Milliseconds
+    delay(10);  // Milliseconds
 }
 
 void sendMIDI(byte cmd, byte data1, byte data2)
