@@ -102,7 +102,7 @@ void loop()
         if (stop_count > 7)
         {
           // Transmit Note Off 
-          sendMIDI(0x80 + CHANNEL,PLAY_NOTE,0x7F);
+          sendMIDI(0x80 | CHANNEL,PLAY_NOTE,0x7F);
           playing = false;
           stop_count=0;
         }
