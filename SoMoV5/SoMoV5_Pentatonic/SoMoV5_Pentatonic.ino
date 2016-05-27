@@ -33,6 +33,8 @@ int16_t ax, ay, az;
 int16_t gx, gy, gz;
 int16_t mx, my, mz;
 
+#define MIDICHANNEL 1
+
 #define POWER 1
 #define RX    MOSI
 #define TX    4
@@ -67,7 +69,7 @@ void setup()
     Wire.begin();
 
     // Soft Serial for XBee Radio
-    radioSerial.begin(57600);
+    radioSerial.begin(38400);
     
     // Initialize USB serial communication
     Serial.begin(38400);
@@ -97,7 +99,8 @@ void loop()
     float acceleration = ScaleAccelMagnitude(ax, ay, az);
     
     // Map to a note
-    byte note = pentatonic[round(angle*(arraylength-1))];
+    int offset = round(angle*(arraylength-1));
+    byte note = pentatonic[offset];
     
     // Determine volume (velocity)
     byte velocity = round(acceleration*127);
@@ -115,9 +118,9 @@ void loop()
     if (velocity > 20)
     {
       // Transmit     
-      sendMIDI(0x90,note,velocity);   // Channel 1, Note On
+      sendMIDI(0x90 | MIDICHANNEL, note, velocity);   // Channel x, Note On
       delay(10);
-      sendMIDI(0x80,note,0);          // Channel 1, Note Off
+      sendMIDI(0x80 | MIDICHANNEL, note, 0);          // Channel x, Note Off
     }
         
     delay(10);  // Milliseconds
